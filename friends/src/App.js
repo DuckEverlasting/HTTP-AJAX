@@ -14,15 +14,12 @@ class App extends React.Component {
         age: "",
         email: ""
       },
-      updateTog: false
+      updateTog: false,
+      deletePrimed: 0
     };
   }
 
   componentDidMount() {
-    axios
-      .get("http://localhost:5000/friends/1")
-      .then(res => console.log(res))
-      .catch(err => console.log(err))
     this.getFriends();
   }
 
@@ -51,11 +48,11 @@ class App extends React.Component {
       alert(error.join("\n"));
       return;
     }
-    const update = this.checkUpdate(input);
+    const update = this.pullFriendData(input.name, "name");
     if (update) {
-      this.setState({updateTog: true})
+      this.setState({ updateTog: true });
       alert(
-        'Someone with that name already exists in our database.\nClick "Update Friend" to update their information or "Cancel Update" to return.'
+        'Someone with that name already exists in our database.\nClick "Update Friend" to update their information\nor "Cancel Update" to return.'
       );
       return;
     }
@@ -76,19 +73,24 @@ class App extends React.Component {
       alert(error.join("\n"));
       return;
     }
-    const update = this.checkUpdate(input);
-    if (!update) {
-      alert("Name not found. Did you change it?")
+    const friend = this.pullFriendData(input.name, "name");
+    if (!friend) {
+      alert("Sorry, our database doesn't contain anybody with that name.");
       return;
     }
     axios
-    .put("http://localhost:5000/friends", input)
-    .then(res => this.setState({ input: { name: "", age: "", email: "" }, updateTog: false }))
-    .then(this.getFriends)
-    .catch(err => {
-      console.log(err);
-    });
-  }
+      .put(`http://localhost:5000/friends/${friend.id}`, input)
+      .then(res =>
+        this.setState({
+          input: { name: "", age: "", email: "" },
+          updateTog: false
+        })
+      )
+      .then(this.getFriends)
+      .catch(err => {
+        console.log(err);
+      });
+  };
 
   checkComplete(input) {
     const error = [];
@@ -104,26 +106,50 @@ class App extends React.Component {
     return error;
   }
 
-  checkUpdate(input) {
-    return this.state.friends.some(el => el.name === input.name)
+  pullFriendData(input, inputType) {
+    return this.state.friends.find(el => input === el[inputType]);
   }
 
-  cancelUpdate = ev => {
+  updateTogFunct = ev => {
     ev.preventDefault();
     this.setState({
-      updateTog: false
-    })
-  }
+      input: this.state.updateTog
+        ? { name: "", age: "", email: "" }
+        : this.state.input,
+      updateTog: !this.state.updateTog
+    });
+  };
+
+  callUpdate = ev => {
+    ev.preventDefault();
+    const friend = this.pullFriendData(Number(ev.target.id), "id");
+    this.setState({
+      input: {
+        name: friend.name,
+        age: friend.age,
+        email: friend.email
+      },
+      updateTog: true
+    });
+    window.scrollTo(0, 0)
+  };
 
   render() {
     return (
       <div className="App">
-        <FriendList friends={this.state.friends} />
         <AddFriend
           input={this.state.input}
           inputHandler={this.inputHandler}
           postFriend={this.postFriend}
+          updateFriend={this.updateFriend}
           updateTog={this.state.updateTog}
+          updateTogFunct={this.updateTogFunct}
+        />
+        <FriendList
+          friends={this.state.friends}
+          editButton={this.callUpdate}
+          deleteButton={this.delete}
+          deletePrimed={this.state.deletePrimed}
         />
       </div>
     );
