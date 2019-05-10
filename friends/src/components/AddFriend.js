@@ -68,6 +68,7 @@ const ButtonSC = styled.button`
       border-color: ${colors.darkGreen};
     }
 `;
+
 const InputButtonSC = styled(ButtonSC)`
   display: ${props => (props.updateTog ? "none" : "inline-block")};
 `;

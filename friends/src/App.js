@@ -92,6 +92,21 @@ class App extends React.Component {
       });
   };
 
+  deleteFriend = ev => {
+    ev.preventDefault();
+    if (this.state.deletePrimed !== ev.target.id) {
+      this.setState({ deletePrimed: ev.target.id });
+    } else {
+      axios
+        .delete(`http://localhost:5000/friends/${ev.target.id}`)
+        .then(res => this.setState({ deletePrimed: 0 }))
+        .then(this.getFriends)
+        .catch(err => {
+          console.log(err);
+        });
+    }
+  };
+
   checkComplete(input) {
     const error = [];
     if (input.name === "") {
@@ -131,7 +146,13 @@ class App extends React.Component {
       },
       updateTog: true
     });
-    window.scrollTo(0, 0)
+    window.scrollTo(0, 0);
+  };
+
+  resetDelete = () => {
+    this.setState({
+      deletePrimed: 0
+    });
   };
 
   render() {
@@ -148,8 +169,9 @@ class App extends React.Component {
         <FriendList
           friends={this.state.friends}
           editButton={this.callUpdate}
-          deleteButton={this.delete}
+          deleteButton={this.deleteFriend}
           deletePrimed={this.state.deletePrimed}
+          resetDelete={this.resetDelete}
         />
       </div>
     );

@@ -20,6 +20,7 @@ const FriendList = props => {
           editButton={props.editButton}
           deleteButton={props.deleteButton}
           deletePrimed={props.deletePrimed}
+          resetDelete={props.resetDelete}
         />
       ))}
     </FriendListSC>
